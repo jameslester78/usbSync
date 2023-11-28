@@ -59,28 +59,31 @@ def checkValidPlaylists():
 def syncfiles():
 
     #sync the destination with the source
-
+    
     with open(controlFile) as input_file:
         line = [next(input_file) for _ in range(1)]
-        #print(line)
+        
+        #print(list(eval(line[0])))
 
-    dict =json.loads(line[0]) #create a dictionary from a string
+        with capture_output() as c:
+            for dict in list(eval(line[0])):
+                print (dict)
 
-    usbLoc = dict['usbLoc'] 
-    pcLoc = dict['pcLoc']
-    dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                usbLoc = dict['usbLoc'] 
+                pcLoc = dict['pcLoc']
+                dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    
+                sync(pcLoc,usbLoc,'sync',purge=True,verbose=True)
 
-    with capture_output() as c:
-        sync(pcLoc,usbLoc,'sync',purge=True,verbose=True)
+          
+        output = c.stdout.replace('\n\n', '')
+        print (output)
 
+        with open(logfile, 'a') as file:
+            file.write (f'{dt_string} - sync starting\n')   
+            file.write (f'{output}\n')   
+            file.write (f'{dt_string} - sync ended\n')  
 
-    stdout = c.stdout.replace('\n\n', '')
-    print (stdout.replace('\n\n', ''))
-
-    with open(logfile, 'a') as file:
-        file.write (f'{dt_string} - sync starting\n')   
-        file.write (f'{stdout}\n')   
-        file.write (f'{dt_string} - sync ended\n')            
 
 checkValidUSB()
 syncfiles()
